@@ -18,10 +18,6 @@ local hotkeys_popup = require("awful.hotkeys_popup")
 -- when client with a matching name is opened:
 require("awful.hotkeys_popup.keys")
 
--- Load Debian menu entries
-local debian = require("debian.menu")
-local has_fdo, freedesktop = pcall(require, "freedesktop")
-
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
 -- another config (This code will only ever execute for the fallback config)
@@ -49,10 +45,10 @@ end
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
-beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
+beautiful.init(gears.filesystem.get_themes_dir() .. "gtk/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
-terminal = "/home/mmpc/.local/bin/kitty"
+terminal = "kitty"
 editor = os.getenv("EDITOR") or "editor"
 editor_cmd = terminal .. " -e " .. editor
 
@@ -96,22 +92,6 @@ myawesomemenu = {
 
 local menu_awesome = { "awesome", myawesomemenu, beautiful.awesome_icon }
 local menu_terminal = { "open terminal", terminal }
-
-if has_fdo then
-    mymainmenu = freedesktop.menu.build({
-        before = { menu_awesome },
-        after =  { menu_terminal }
-    })
-else
-    mymainmenu = awful.menu({
-        items = {
-                  menu_awesome,
-                  { "Debian", debian.menu.Debian_menu.Debian },
-                  menu_terminal,
-                }
-    })
-end
-
 
 mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
                                      menu = mymainmenu })
@@ -392,9 +372,13 @@ globalkeys = gears.table.join(
               end,
               {description = "lua execute prompt", group = "awesome"}),
     -- Menubar
-    awful.key({ modkey }, "p", function() menubar.show() end,
-              {description = "show the menubar", group = "launcher"}),
+    -- awful.key({ modkey }, "p", function() menubar.show() end,
+    --          {description = "show the menubar", group = "launcher"}),
     
+       awful.key({ modkey }, "d", function() awful.util.spawn("rofi -modi drun -show drun -config ~/.config/rofi/rofidmenu.rasi") end,
+              {description = "Open Thunar", group = "Programs"}),
+     
+
     -- Quick Launch
     awful.key({ modkey }, "F1", function() awful.util.spawn("thunar") end,
               {description = "Open Thunar", group = "Programs"}),
@@ -405,8 +389,8 @@ globalkeys = gears.table.join(
     awful.key({ modkey }, "F3", function() awful.util.spawn("brave-browser-nightly") end,
               {description = "Open Brave Browser (Nightly)", group = "Programs"}),
     
-    awful.key({ modkey }, "F4", function() awful.util.spawn("") end,
-              {description = "", group = ""}),
+    awful.key({ modkey }, "F4", function() awful.util.spawn("thunderbird") end,
+              {description = "Open Mozilla Thunderbird", group = "Programs"}),
 	      
     awful.key({ modkey }, "F5", function() awful.util.spawn("lutris") end,
 	      {description = "Open Lutris", group = "Games"}), 
@@ -550,14 +534,10 @@ awful.rules.rules = {
      }
     },
 
-    -- Floating clients.
-    { rule_any = {
-        instance = {
-          "DTA",  -- Firefox addon DownThemAll.
           "copyq",  -- Includes session name in class.
           "pinentry",
-        },
-        class = {
+        }
+        class = { 
           "Arandr",
           "Blueman-manager",
           "Gpick",
@@ -567,19 +547,19 @@ awful.rules.rules = {
           "Tor Browser", -- Needs a fixed window size to avoid fingerprinting by screen size.
           "Wpa_gui",
           "veromix",
-          "xtightvncviewer"},
+          "xtightvncviewer"}
 
         -- Note that the name property shown in xprop might be set slightly after creation of the client
         -- and the name shown there might not match defined rules here.
         name = {
           "Event Tester",  -- xev.
-        },
+        }
         role = {
           "AlarmWindow",  -- Thunderbird's calendar.
           "ConfigManager",  -- Thunderbird's about:config.
           "pop-up",       -- e.g. Google Chrome's (detached) Developer Tools.
         }
-      }, properties = { floating = true }},
+       properties = { floating = true },
 
     -- Add titlebars to normal clients and dialogs
     { rule_any = {type = { "normal", "dialog" }
@@ -595,30 +575,32 @@ awful.rules.rules = {
     
     
     -- Terminal on tag 1 
-     { rule = { class = "kitty" },
+     { rule = { instance = "kitty" },
        properties = { screen = 1, tag = "1" } },
 
-
     -- Discord on tag 2 
-     { rule = { class = "discord" },
+     { rule_any = { class = "discord" },
        properties = { screen = 1, tag = "2" } },
 
-
     -- Brave Browser Nightly on tag 3
-     { rule = { class = "brave-browser-nightly" },
+     { rule_any = { class = {"brave-browser-nightly", "browser"} },
        properties = { screen = 1, tag = "3" } },
-
-       
-    -- Steam on tag 4 
-     { rule = { class = "steam" },
+    
+    -- Thunderbird on tag 4
+     { rule = { class = "thunderbird" },
        properties = { screen = 1, tag = "4" } },
 
-
     -- Lutris on tag 5 
-     { rule = { class = "lutris" },
+     { rule = { class = "Lutris" },
        properties = { screen = 1, tag = "5" } },
-        
-}
+    
+    -- Steam, Battle.net, Lutris and Heroic on tag 8 
+     { rule = { class = "Steam" },
+       properties = { screen = 1, tag = "8" } },
+    
+    -- Games on tag 9 
+     { rule = { class = "steam" },
+       properties = { screen = 1, tag = "9" } }
 
 -- }}}
 
@@ -688,5 +670,6 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 -- }}}
 
 -- {{{ Autorun
+awful.spawn("/usr/lib/geoclue-2.0/demos/agent")
 awful.spawn("/home/mmpc/.config/awesome/autorun.sh")
 -- }}}

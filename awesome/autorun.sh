@@ -8,7 +8,6 @@ function run {
 }
 
 run nitrogen --restore
-run picom
-run /usr/libexec/geoclue-2.0/demos/agent 
+run picom --xrender-sync-fence
 run redshift
-run lxpolkit
+run /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
